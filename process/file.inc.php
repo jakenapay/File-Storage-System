@@ -16,7 +16,7 @@ class Book {
 
     // Function to insert a book into the database
     public function createBook() {
-        $query = "INSERT INTO " . $this->table_name . " (title, author, published_year, category, description, pdf_file, upload_date)
+        $query = "INSERT INTO " . $this->table_name . " (title, author, published_year, category, description, file, upload_date)
                   VALUES (:title, :author, :year, :category, :description, :file_name, NOW())";
 
         $stmt = $this->conn->prepare($query);

@@ -1,35 +1,42 @@
 <?php
-// Include the database and user class
-include_once 'database.inc.php';  // The file where your Database class is defined
-include_once 'user.php';      // The file where your User class is defined
+// Include the database connection
+include_once 'database.inc.php';
 
-$message = "";  // Initialize an empty message
+// Initialize the database connection
+$database = new Database();
+$pdo = $database->getConnection();
 
-// Check if form data is submitted
+// Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get form data
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $role = $_POST['role'];
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);  // Collecting email
+    $password = trim($_POST['password']);
+    $role = trim($_POST['role']);  // Collecting role
 
-    // Initialize the database connection
-    $database = new Database();
-    $db = $database->getConnection();
+    // Input validation (optional but recommended)
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "Invalid email format!";
+        exit;
+    }
 
-    // Initialize user object
-    $user = new User($db);
-    $user->name = $name;
-    $user->email = $email;
-    $user->password = $password;  // The raw password, will be hashed in the User class
-    $user->role = $role;
+    // Hash the password before saving it
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-    // Try to create the user
-    if ($user->create()) {
-        $message = "User created successfully.";  // Success message
+    // Prepare the SQL insert query
+    $sql = "INSERT INTO users (name, email, password, role) VALUES (:username, :email, :password, :role)";
+
+    // Execute the statement
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':username', $username);
+    $stmt->bindParam(':email', $email);  // Bind email
+    $stmt->bindParam(':password', $hashed_password);
+    $stmt->bindParam(':role', $role);
+
+    // Attempt to execute the query
+    if ($stmt->execute()) {
+        echo "User registered successfully!";
     } else {
-        $message = "Error creating user.";  // Error message
+        echo "Error: User registration failed.";
     }
 }
 ?>
-

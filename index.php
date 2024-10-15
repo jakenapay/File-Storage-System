@@ -3,6 +3,22 @@
 // header("Pragma: no-cache");
 // header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 // Check for status in the URL
+
+session_start();
+
+// Check if the user is logged in
+// if (!isset($_SESSION['user_id'])) {
+//     header("Location: signin.php");
+//     exit();
+// }
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: signin.php");
+    exit();
+}
+
+
 $status = isset($_GET['status']) ? $_GET['status'] : '';
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 
@@ -34,8 +50,23 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
 
         $(document).ready(function() {
             $('#showTable').DataTable();
+            // Enable Bootstrap tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
         });
     </script>
+
+    <style>
+        .logout-button {
+            position: fixed;
+            /* Make the button fixed to the viewport */
+            top: 20px;
+            /* Distance from the top of the page */
+            right: 20px;
+            /* Distance from the right of the page */
+            z-index: 1000;
+            /* Ensure it's on top of other elements */
+        }
+    </style>
 </head>
 
 <body>
@@ -58,6 +89,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             <th>File Name</th>
                             <th>Upload Date</th>
                             <th>File</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -70,7 +102,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                         $db = $database->getConnection();
 
                         // Fetch books from the database
-                        $query = "SELECT * FROM books";  // Adjust the query if your table name is different
+                        $query = "SELECT * FROM books WHERE isDelete = 0";  // Adjust the query if your table name is different
                         $stmt = $db->prepare($query);
                         $stmt->execute();
 
@@ -81,22 +113,22 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                                 echo '<tr>';
                                 // echo '<td>' . htmlspecialchars($row['book_id']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['title']) . '</td>';
-                                echo '<td>' . htmlspecialchars($row['author']) . '</td>';
+                                echo '<td class="text-capitalize">' . htmlspecialchars($row['author']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['published_year']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['category']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['description']) . '</td>';
-                                echo '<td>' . htmlspecialchars($row['pdf_file']) . '</td>';
+                                echo '<td>' . htmlspecialchars($row['file']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['upload_date']) . '</td>';
 
                                 // New Download column with a button and icon
                                 echo '<td class="text-center">';
-                                $file_path = 'src/pdf/' . htmlspecialchars($row['pdf_file']);
+                                $file_path = 'src/pdf/' . htmlspecialchars($row['file']);
 
                                 // Check if the file exists in the folder
                                 if (file_exists($file_path)) {
                                     // Show the enabled download button if the file exists
                                     // echo '<a class="btn btn-dark btn-sm" href="' . $file_path . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download" onclick="refreshAfterDownload()">';
-                                    echo '<a class="btn btn-dark btn-sm" href="src/pdf/' . htmlspecialchars($row['pdf_file']) . '?v=' . time() . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download" onclick="refreshAfterDownload()">';
+                                    echo '<a class="btn btn-dark btn-sm" href="src/pdf/' . htmlspecialchars($row['file']) . '?v=' . time() . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download" onclick="refreshAfterDownload()">';
 
                                     echo '<i class="fa-solid fa-download"></i>';  // Font Awesome download icon
                                     echo '</a>';
@@ -108,11 +140,28 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                                 }
 
                                 echo '</td>';
+                                // Delete button
+                                echo '<td clss="text-center">';
+                                echo '<a class="btn btn-danger btn-sm" href="process/delete_file.inc.php?id=' . htmlspecialchars($row['id']) . '" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm(\'Are you sure you want to delete this book?\')">';
+                                echo '<i class="fa-solid fa-trash"></i>';  // Font Awesome trash icon
+                                echo '</a>';
+                                echo '</td>';
+
                                 echo '</tr>';
                             }
                         } else {
                             // If no books are found, display a message
-                            echo '<tr><td colspan="8" class="text-center">No books found.</td></tr>';
+                            echo '<tr>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            </tr>';
+                            // echo '<tr><td colspan="8" class="text-center"></td></tr>';
                         }
                         ?>
                     </tbody>
@@ -123,6 +172,14 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
         <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addfilemodal">
             Upload
         </button>
+
+        <!-- Log out button -->
+        <div class="logout-button">
+            <a class="btn btn-dark btn-sm" href="process/logout.inc.php" data-bs-toggle="tooltip" data-bs-placement="top" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+
     </div>
 
 
@@ -143,7 +200,8 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             </div>
                             <div class="form-group">
                                 <label for="author">Author</label>
-                                <input type="text" name="author" class="form-control" required>
+                                <input type="text" name="author" value="<?php echo $_SESSION['name']; ?>"
+                                    class="form-control text-capitalize" required>
                             </div>
                             <div class="form-group">
                                 <label for="year">Year</label>
@@ -166,7 +224,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             </div>
                             <div class="form-group">
                                 <label for="file">Upload PDF</label>
-                                <input type="file" name="file" class="form-control" accept="application/pdf" required>
+                                <input type="file" name="file" class="form-control" required>
                             </div>
                             <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
                     </div>
@@ -192,25 +250,37 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
         var status = "<?php echo $status; ?>";
         var type = "<?php echo $type; ?>";
 
-        if (status === 'success') {
-            alert('Book inserted successfully.');
-        } else if (status === 'error') {
-            switch (type) {
-                case 'invalid_file':
-                    alert('Only PDF files are allowed.');
-                    break;
-                case 'db_error':
-                    alert('Error inserting book into the database.');
-                    break;
-                case 'file_move_error':
-                    alert('Error moving the uploaded file.');
-                    break;
-                case 'file_upload_error':
-                    alert('Error uploading the file.');
-                    break;
-                default:
-                    alert('An unknown error occurred.');
-                    break;
+        // notifications.js
+        function handleResponse(status, type) {
+            if (status === 'success') {
+                alert('Book inserted successfully.');
+            } else if (status === 'error') {
+                switch (type) {
+                    case 'invalid_file':
+                        alert('Only PDF files are allowed.');
+                        break;
+                    case 'db_error':
+                        alert('Error inserting book into the database.');
+                        break;
+                    case 'file_move_error':
+                        alert('Error moving the uploaded file.');
+                        break;
+                    case 'file_upload_error':
+                        alert('Error uploading the file.');
+                        break;
+                    case 'missing_id':
+                        alert('Error: Book ID is missing.');
+                        break;
+                    case 'not_found':
+                        alert('Error: The specified book was not found.');
+                        break;
+                    case 'already_deleted':
+                        alert('Error: This book has already been marked as deleted.');
+                        break;
+                    default:
+                        alert('An unknown error occurred.');
+                        break;
+                }
             }
         }
     </script>

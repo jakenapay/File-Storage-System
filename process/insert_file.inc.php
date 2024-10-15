@@ -27,16 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mkdir($target_dir, 0777, true);  // Create the directory if it doesn't exist
     }
 
-    // Check if file is a PDF
-    $file_ext = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-    if ($file_ext != 'pdf') {
-        echo "Only PDF files are allowed.";
-        header("Location: ../index.php?status=error&type=invalid_file");
-        exit;
-    }
-
     // Generate a unique name for the file
-    $unique_file_name = uniqid('pdf_', true) . '.' . $file_ext;
+    $unique_file_name = uniqid('file_', true) . '.' . pathinfo($file_name, PATHINFO_EXTENSION);  // Use original extension
     $target_file = $target_dir . $unique_file_name;
 
     // Move uploaded file to target directory
