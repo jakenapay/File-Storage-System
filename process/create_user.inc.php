@@ -37,12 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($stmt->execute()) {
         echo '<script>
             alert("User registered successfully!");
-            window.location.href = "signup.php";
+            window.location.href = "../signup.php";
           </script>';
     } else {
         echo '<script>
             alert("Error: User registration failed.");
-            window.location.href = "signup.php";
+            window.location.href = "../signup.php";
           </script>';
     }
 }

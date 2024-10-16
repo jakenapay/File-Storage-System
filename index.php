@@ -62,7 +62,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
     <div class="navbar bg-light">
         <div class="container d-flex justify-content-between align-items-center">
             <!-- Welcome the user -->
-             <h4 class="mb-0 text-capitalize text-center" style="font-family:Arial, Helvetica, sans-serif"><?php echo $_SESSION['name']; ?></h4>
+            <h4 class="mb-0 text-capitalize text-center" style="font-family:Arial, Helvetica, sans-serif"><?php echo $_SESSION['name']; ?></h4>
             <!-- Files Text -->
             <h3 class="mb-0 text-uppercase text-center" style="letter-spacing: .1rem;font-family:Arial, Helvetica, sans-serif">Files</h3>
             <!-- Log out button -->
@@ -89,10 +89,11 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             <th>Year</th>
                             <th>Category</th>
                             <th>Description</th>
-                            <th>File Name</th>
+                            <!-- <th>File Name</th> -->
                             <th>Upload Date</th>
                             <th>File</th>
                             <th>Delete</th>
+                            <th>Edit</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -131,7 +132,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                                 echo '<td>' . htmlspecialchars($row['published_year']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['category']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['description']) . '</td>';
-                                echo '<td>' . htmlspecialchars($row['file']) . '</td>';
+                                // echo '<td>' . htmlspecialchars($row['file']) . '</td>';
                                 echo '<td>' . htmlspecialchars($row['upload_date']) . '</td>';
 
                                 // New Download column with a button and icon
@@ -142,22 +143,29 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                                 if (file_exists($file_path)) {
                                     // Show the enabled download button if the file exists
                                     // echo '<a class="btn btn-dark btn-sm" href="' . $file_path . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download" onclick="refreshAfterDownload()">';
-                                    echo '<a class="btn btn-dark btn-sm" href="src/pdf/' . htmlspecialchars($row['file']) . '?v=' . time() . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download" onclick="refreshAfterDownload()">';
+                                    echo '<a class="btn btn-primary btn-sm" href="src/pdf/' . htmlspecialchars($row['file']) . '?v=' . time() . '" download data-bs-toggle="tooltip" data-bs-placement="top" title="Download ' .htmlspecialchars($row['file']). '" onclick="refreshAfterDownload()">';
 
                                     echo '<i class="fa-solid fa-download"></i>';  // Font Awesome download icon
                                     echo '</a>';
                                 } else {
                                     // Show a disabled button if the file doesn't exist
-                                    echo '<button class="btn btn-dark btn-sm" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="File not available">';
+                                    echo '<button class="btn btn-primary btn-sm" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="File not available">';
                                     echo '<i class="fa-solid fa-download"></i>';  // Font Awesome download icon
                                     echo '</button>';
                                 }
 
                                 echo '</td>';
                                 // Delete button
-                                echo '<td clss="text-center">';
+                                echo '<td class="text-center">';
                                 echo '<a class="btn btn-danger btn-sm" href="process/delete_file.inc.php?id=' . htmlspecialchars($row['id']) . '" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm(\'Are you sure you want to delete this book?\')">';
                                 echo '<i class="fa-solid fa-trash"></i>';  // Font Awesome trash icon
+                                echo '</a>';
+                                echo '</td>';
+
+                                // Edit button
+                                echo '<td class="text-center">';
+                                echo '<a class="btn btn-light border btn-sm" href="editRecord.php?id=' . htmlspecialchars($row['id']) . '" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">';
+                                echo '<i class="fa-solid fa-pencil-alt"></i>';  // Font Awesome edit icon
                                 echo '</a>';
                                 echo '</td>';
 
