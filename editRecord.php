@@ -53,7 +53,7 @@ if (isset($_GET['id'])) {
 
                     <div class="mb-3">
                         <label for="author" class="form-label">Author:</label>
-                        <input type="text" name="author" id="author" class="form-control" value="<?php echo htmlspecialchars($book['author']); ?>" required>
+                        <input type="text" name="author" id="author" class="form-control text-capitalize" value="<?php echo htmlspecialchars($book['author']); ?>" readonly required>
                     </div>
 
                     <div class="mb-3">
@@ -63,9 +63,14 @@ if (isset($_GET['id'])) {
 
                     <div class="mb-3">
                         <label for="category" class="form-label">Category:</label>
-                        <input type="text" name="category" id="category" class="form-control" value="<?php echo htmlspecialchars($book['category']); ?>" required>
+                        <select name="category" id="category" class="form-control" required>
+                            <option value="" disabled>Choose Category</option>
+                            <option value="Book" <?php echo ($book['category'] == 'Book') ? 'selected' : ''; ?>>Book</option>
+                            <option value="Letter" <?php echo ($book['category'] == 'Letter') ? 'selected' : ''; ?>>Letter</option>
+                            <option value="Form" <?php echo ($book['category'] == 'Form') ? 'selected' : ''; ?>>Form</option>
+                            <option value="Other" <?php echo ($book['category'] == 'Other') ? 'selected' : ''; ?>>Other</option>
+                        </select>
                     </div>
-
                     <div class="mb-3">
                         <label for="description" class="form-label">Description:</label>
                         <textarea name="description" id="description" class="form-control" required><?php echo htmlspecialchars($book['description']); ?></textarea>

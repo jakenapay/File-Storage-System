@@ -216,7 +216,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             <div class="form-group">
                                 <label for="author">Author</label>
                                 <input type="text" name="author" value="<?php echo $_SESSION['name']; ?>"
-                                    class="form-control text-capitalize" required>
+                                    class="form-control text-capitalize" readonly required>
                             </div>
                             <div class="form-group">
                                 <label for="year">Year</label>

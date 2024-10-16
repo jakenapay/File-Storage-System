@@ -29,14 +29,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $file_name = $file['name'];
     $file_tmp = $file['tmp_name'];
     $file_error = $file['error'];
-    
+
     $new_file_name = '';  // Initialize variable for the new file name
     $file_updated = false;  // Track if the file is updated
 
+    // Define the maximum file size (e.g., 5 MB)
+    $max_file_size = 5 * 1024 * 1024;  // 5 MB in bytes
+
     // If a file was uploaded without errors
     if ($file_error === 0 && !empty($file_name)) {
+        // Check the file size
+        if ($file['size'] > $max_file_size) {
+            echo '<script>
+            alert("Error: File size exceeds the maximum limit of 5 MB.");
+            window.location.href = "../editRecord.php?id=' . $book_id . '";
+        </script>';
+            exit();
+        }
+
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-        $new_file_name = uniqid('book_', true) . '.' . $file_ext;  // Generate a unique file name
+        $new_file_name = uniqid('file_', true) . '.' . $file_ext;  // Generate a unique file name
         $target_dir = '../src/pdf/';  // Directory to store files
         $target_file = $target_dir . $new_file_name;
 
@@ -50,9 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } else {
             echo '<script>
-                alert("Error: File upload failed.");
-                window.location.href = "../editRecord.php?id=' . $book_id . '";
-            </script>';
+            alert("Error: File upload failed.");
+            window.location.href = "../editRecord.php?id=' . $book_id . '";
+        </script>';
             exit();
         }
     }
