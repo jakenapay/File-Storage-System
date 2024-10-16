@@ -8,10 +8,11 @@ $pdo = $database->getConnection();
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = trim($_POST['username']);
+    $username = trim($_POST['givenname']) . " " . trim($_POST['familyname']);
     $email = trim($_POST['email']);  // Collecting email
     $password = trim($_POST['password']);
-    $role = trim($_POST['role']);  // Collecting role
+    $role = 'user';
+    // Setting role as user so the next one to register is set as user
 
     // Input validation (optional but recommended)
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -34,9 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Attempt to execute the query
     if ($stmt->execute()) {
-        echo "User registered successfully!";
+        echo '<script>
+            alert("User registered successfully!");
+            window.location.href = "signup.php";
+          </script>';
     } else {
-        echo "Error: User registration failed.";
+        echo '<script>
+            alert("Error: User registration failed.");
+            window.location.href = "signup.php";
+          </script>';
     }
 }
-?>

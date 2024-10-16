@@ -55,26 +55,29 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
         });
     </script>
 
-    <style>
-        .logout-button {
-            position: fixed;
-            /* Make the button fixed to the viewport */
-            top: 20px;
-            /* Distance from the top of the page */
-            right: 20px;
-            /* Distance from the right of the page */
-            z-index: 1000;
-            /* Ensure it's on top of other elements */
-        }
-    </style>
 </head>
 
 <body>
+    <!-- Navigation bar -->
+    <div class="navbar bg-light">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- Welcome the user -->
+             <h4 class="mb-0 text-capitalize text-center" style="font-family:Arial, Helvetica, sans-serif"><?php echo $_SESSION['name']; ?></h4>
+            <!-- Files Text -->
+            <h3 class="mb-0 text-uppercase text-center" style="letter-spacing: .1rem;font-family:Arial, Helvetica, sans-serif">Files</h3>
+            <!-- Log out button -->
+            <div class="logout-button">
+                <a class="btn btn-dark btn-sm" href="process/logout.inc.php" data-bs-toggle="tooltip" data-bs-placement="top" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <div class="container mt-5">
-        <div class="container">
-            <h1 class="mb-5 text-uppercase text-center" style="letter-spacing: 2rem;font-family:'Times New Roman', Times, serif">Files</h1>
-        </div>
+        <!-- <div class="container">
+            <h3 class="mb-5 text-uppercase text-center" style="letter-spacing: .1rem;font-family:'Times New Roman', Times, serif">Files</h3>
+        </div> -->
         <div class="row d-flex justify-content-center align-items-center">
             <div class="col-12 col-md-12 col-lg-12">
                 <table id="showTable" class="table thead-dark table-responsive">
@@ -102,8 +105,19 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                         $db = $database->getConnection();
 
                         // Fetch books from the database
-                        $query = "SELECT * FROM books WHERE isDelete = 0";  // Adjust the query if your table name is different
-                        $stmt = $db->prepare($query);
+                        $username = $_SESSION['name'];
+                        $role = $_SESSION['role'];
+
+                        if ($role === 'Admin') {
+                            // Admin can see all books
+                            $query = "SELECT * FROM books WHERE isDelete = 0";
+                            $stmt = $db->prepare($query);
+                        } else {
+                            // Regular users can see only their own books
+                            $query = "SELECT * FROM books WHERE isDelete = 0 AND author = :username";
+                            $stmt = $db->prepare($query);
+                            $stmt->bindParam(':username', $username);  // Bind the username parameter
+                        }
                         $stmt->execute();
 
                         // Check if there are books to display
@@ -160,6 +174,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
                             <td class="text-center"></td>
                             <td class="text-center"></td>
                             <td class="text-center"></td>
+                            <td class="text-center"></td>
                             </tr>';
                             // echo '<tr><td colspan="8" class="text-center"></td></tr>';
                         }
@@ -172,14 +187,6 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
         <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addfilemodal">
             Upload
         </button>
-
-        <!-- Log out button -->
-        <div class="logout-button">
-            <a class="btn btn-dark btn-sm" href="process/logout.inc.php" data-bs-toggle="tooltip" data-bs-placement="top" title="Logout">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </a>
-        </div>
-
     </div>
 
 
